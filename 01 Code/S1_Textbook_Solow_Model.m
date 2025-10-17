@@ -72,9 +72,8 @@ R2 = ESS / TSS % R-squared
 s_e_e = sqrt( (residuals' * residuals) / (n - k) )
 
 %% Exercise 1 - Export to LateX
-% Export results to a file to be inserted to latex
-% Define variable names and labels
-varNames = {'Constant', 'ln(I/GDP)', 'ln(n+g+delta)'};
+% Export results to a file to be inserted to latex solution environment
+varNames = {'Constant', 'ln(I/GDP)', 'ln(n+g+delta)'}; % Define variable names and labels
 coeffs = beta_hat;
 SEs = se_beta;
 
@@ -83,11 +82,17 @@ outputFolder = fullfile('..','02 Outputs');
 filename = fullfile(outputFolder, 'Exercise_1.1.tex');  % full path
 fid = fopen(filename, 'w'); % Open file for writing
 
-fprintf(fid, '\\begin{table}[ht]\n');
+%fprintf(fid, '\\begin{table}[ht]\n');
 fprintf(fid, '\\centering\n');
-fprintf(fid, '\\caption{Regression Results for Non-oil Sample}\n');
+fprintf(fid, '\\textbf{Regression Results for Non-oil Sample} \\\\\n');
 fprintf(fid, '\\begin{tabular}{lcc}\n');
 fprintf(fid, '\\hline\n');
+
+% Add dependent variable line
+fprintf(fid, '\\multicolumn{3}{l}{Dependent variable: ln(GDP)} \\\\\n');
+fprintf(fid, '\\hline\n');
+
+% Table headers
 fprintf(fid, 'Variable & Coefficient & Standard Error \\\\\n');
 fprintf(fid, '\\hline\n');
 
@@ -97,12 +102,12 @@ for i = 1:length(varNames)
 end
 
 fprintf(fid, '\\hline\n');
-fprintf(fid, 'Observations & \\multicolumn{2}{c}{%d} \\\\\n', n);
+fprintf(fid, 'Observations & \\multicolumn{2}{c}{%d} \\\\\n', n); 
 fprintf(fid, 'R-squared & \\multicolumn{2}{c}{%.2f} \\\\\n', R2);
 fprintf(fid, 's.e.e. & \\multicolumn{2}{c}{%.2f} \\\\\n', s_e_e);
 fprintf(fid, '\\hline\n');
 fprintf(fid, '\\end{tabular}\n');
-fprintf(fid, '\\end{table}\n');
+%fprintf(fid, '\\end{table}\n');
 
 fclose(fid);
 
