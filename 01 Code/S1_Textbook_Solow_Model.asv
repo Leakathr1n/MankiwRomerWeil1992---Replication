@@ -19,7 +19,7 @@ clear country invest I N O pop_growth school Y60 Y85 Y_growth %some housekeeping
 % We restrict our sample for now to non-oil producing countries
 MRWdata_filtered = MRWdata(MRWdata.N == 1, :);
 height(MRWdata_filtered) == 98 %verify we have 98 countries left
-n = height(MRWdata_filtered);
+n = height(MRWdata_filtered)
 
 clear ans MRWdata  %some housekeeping
 
@@ -38,14 +38,14 @@ alfa     = 0.05; %signifance level to 5%
 MRWdata_filtered.s = MRWdata_filtered.invest / 100;           % Add s column
 MRWdata_filtered.n = MRWdata_filtered.pop_growth / 100;       % Add n column
 MRWdata_filtered.g_and_delta = 0.05 * ones(height(MRWdata_filtered), 1); % Add g_and_delta column
-MRWdata_filtered.effective_depr = MRWdata_filtered.g_and_delta + MRWdata_filtered.n; % add the effective depreciation / break-even investment rate
+MRWdata_filtered.effective_depr = MRWdata_filtered.g_and_delta + MRWdata_filtered.n % add the effective depreciation / break-even investment rate
 
-% taking the ln/ logs of my variables
+%taking the ln/ logs of my variables
 MRWdata_filtered.log_y = log(MRWdata_filtered.Y85);               % Add log(y) column
 MRWdata_filtered.log_s = log(MRWdata_filtered.s);                 % Add log(s) column
 MRWdata_filtered.log_effective_depr  = log(MRWdata_filtered.effective_depr); % Add log(n + g + δ) column
 
-% setting up my matrixes!
+%setting up my matrixes!
 % X
 X = [ones(height(MRWdata_filtered),1), MRWdata_filtered.log_s, MRWdata_filtered.log_effective_depr];
 % y
@@ -66,10 +66,10 @@ y_hat = X * beta_hat; %calculate predicted values
 y_bar = mean(y); % calculate mean of observed y
 ESS = sum((y_hat - y_bar).^2); % Numerator: explained sum of squares
 TSS = sum((y - y_bar).^2); % Denominator: total sum of squares
-R2 = ESS / TSS; % R-squared
+R2 = ESS / TSS % R-squared
 
 % Calculate the s.e.e
-s_e_e = sqrt( (residuals' * residuals) / (n - k) );
+s_e_e = sqrt( (residuals' * residuals) / (n - k) )
 
 %% Exercise 1 - Export to LateX
 % Export results to a file to be inserted to latex solution environment
@@ -128,6 +128,7 @@ clear ans coeffs ESS fid filename i R2 s_e_e sigma2_hat SEs TSS varNames
 % The Solow model predicts that the elasticity of yi with respect to si (β2) is positive, and the
 % elasticity of yi with respect to (ni + g + δ) (β3) is negative. Use two t-tests to test if these implications
 % are supported by the data. Report the t-statistics, p-values and your decisions for both tests.
+
 
 % testing ​β2 is positive; H0: β2 = 0 & HA: β2 > 0 (one-sided)
 t_beta2 = beta_hat(2) / se_beta(2)
@@ -197,17 +198,17 @@ mdl = fitlm(MRWdata_filtered, 'log_y ~ log_s + log_effective_depr');
 
 tbl = mdl.Coefficients;
 t_beta2 = tbl.tStat(2)
-p_beta2_right = 1 - tcdf(t_beta2, mdl.DFE) % one-sided β2 > 0
+p_beta2_right = 1 - tcdf(t_beta2, mdl.DFE)  % one-sided β2 > 0
 
 t_beta3 = tbl.tStat(3)
-p_beta3_left = tcdf(t_beta3, mdl.DFE)  % one-sided β3 < 0
+p_beta3_left = tcdf(t_beta3, mdl.DFE)      % one-sided β3 < 0
 
 %% Exercise 3 - Calculations
 % The Solow model also predicts that the elasticities β2 and β3 are equal in magnitude but
 % opposite in sign. Test this restriction using an F-test. 
 
 % Restrictions
-R = [0 1 1];  %  beta2 + beta3 = 0
+R = [0 1 1];  % example: beta2 + beta3 = 0
 r = 0;
 df_num = rank(R);
 df_den = n-k;
@@ -216,7 +217,7 @@ df_den = n-k;
 R = [0 1 1];  % beta2 + beta3 = 0
 r = 0;
 
-% Perform F-test: F = (w/#r)
+% Perform F-test: (w/#r)/(q/(n-k))
 w = (R*beta_hat - r)' * inv(R * sigma2_hat * inv(X'*X) * R') * (R*beta_hat - r);
 F = w / (df_num);
 F_crit = finv(1 - alfa, df_num, df_den);
