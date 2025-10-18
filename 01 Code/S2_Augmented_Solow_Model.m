@@ -1,5 +1,5 @@
 %% Econometric Methods I Problem Set 3
-% 1_Textbook Solow Model
+% 2_Augmented Solow Model
 % Barcelona School of Economics, 2025-2026
 % Author: Lea Röller
 
@@ -29,9 +29,9 @@ format bank   % shows 2 decimals for all numeric outputs
 alfa     = 0.05; %signifance level to 5%
 
 %% Exercise 1 - Calculations
-%  Replication of upper panel of MRW's Table I on p. 414.
+%  Replication of upper panel of MRW's Table II on p. 420.
 
-% Equation:  log(yi) = β1 + β2log(si) + β3log(ni + g+δ)+ εi
+% Equation:  log(yi) = β1 + β2 log(si) + β3 log(ni + g + δ) + β4 log(hi) + εi  εi
 
 % Generate the variables
 % y = Y85 %already like this in the data set, no need to modify
@@ -39,15 +39,15 @@ MRWdata_filtered.s = MRWdata_filtered.invest / 100;           % Add s column
 MRWdata_filtered.n = MRWdata_filtered.pop_growth / 100;       % Add n column
 MRWdata_filtered.g_and_delta = 0.05 * ones(height(MRWdata_filtered), 1); % Add g_and_delta column
 MRWdata_filtered.effective_depr = MRWdata_filtered.g_and_delta + MRWdata_filtered.n; % add the effective depreciation / break-even investment rate
+MRWdata_filtered.h = MRWdata_filtered.school /100 % adding the school variable
 
 % taking the ln/ logs of my variables
 MRWdata_filtered.log_y = log(MRWdata_filtered.Y85);               % Add log(y) column
 MRWdata_filtered.log_s = log(MRWdata_filtered.s);                 % Add log(s) column
 MRWdata_filtered.log_effective_depr  = log(MRWdata_filtered.effective_depr); % Add log(n + g + δ) column
+MRWdata_filtered.log_h = log(MRWdata_filtered.h)
 
-% setting up my matrixes!
-% X
-X = [ones(height(MRWdata_filtered),1), MRWdata_filtered.log_s, MRWdata_filtered.log_effective_depr];
+X = [ones(height(MRWdata_filtered),1), MRWdata_filtered.log_s, MRWdata_filtered.log_effective_depr, MRWdata_filtered.log_h];
 % y
 y = MRWdata_filtered.log_y;
 
@@ -71,24 +71,27 @@ R2 = ESS / TSS; % R-squared
 % Calculate the s.e.e
 s_e_e = sqrt( (residuals' * residuals) / (n - k) );
 
-%% Exercise 1 - Export to LateX
-% Export results to a file to be inserted to latex solution environment
-varNames = {'Constant', 'ln(I/GDP)', 'ln(n+g+delta)'}; % Define variable names and labels
+%% Exercise 1 - Export to LaTeX 
+
+% Define variable names (include all regressors)
+varNames = {'Constant', '$ln(I/GDP)$', '$ln(n+g+\delta)$', '$ln(h)$'}; 
+
+% Extract coefficients and standard errors
 coeffs = beta_hat;
 SEs = se_beta;
 
-% File name to save
+% Output folder
 outputFolder = fullfile('..','02 Outputs');
-filename = fullfile(outputFolder, 'Exercise_1.1.tex');  % full path
+filename = fullfile(outputFolder, 'Exercise_2.1.tex');  % full path
 fid = fopen(filename, 'w'); % Open file for writing
 
-%fprintf(fid, '\\begin{table}[ht]\n');
+% Table header
 fprintf(fid, '\\centering\n');
 fprintf(fid, '\\textbf{Regression Results for Non-oil Sample} \\\\\n');
 fprintf(fid, '\\begin{tabular}{lcc}\n');
 fprintf(fid, '\\hline\n');
 
-% Add dependent variable line
+% Dependent variable
 fprintf(fid, '\\multicolumn{3}{l}{Dependent variable: ln(GDP)} \\\\\n');
 fprintf(fid, '\\hline\n');
 
@@ -101,113 +104,26 @@ for i = 1:length(varNames)
     fprintf(fid, '%s & %.2f & (%.2f) \\\\\n', varNames{i}, coeffs(i), SEs(i));
 end
 
+% Summary statistics
 fprintf(fid, '\\hline\n');
 fprintf(fid, 'Observations & \\multicolumn{2}{c}{%d} \\\\\n', n); 
 fprintf(fid, 'R-squared & \\multicolumn{2}{c}{%.2f} \\\\\n', R2);
 fprintf(fid, 's.e.e. & \\multicolumn{2}{c}{%.2f} \\\\\n', s_e_e);
 fprintf(fid, '\\hline\n');
+
+% End table
 fprintf(fid, '\\end{tabular}\n');
-%fprintf(fid, '\\end{table}\n');
 
 fclose(fid);
 
 disp(['LaTeX table exported to ', filename]);
 
-%% Exercise 1 - Cross-Check
-mdl = fitlm(MRWdata_filtered, ...
-    'log_y ~ log_s + log_effective_depr');
-
-% Display the full regression table
-disp(mdl)
-
-%% Housekeeping
-
-clear ans coeffs ESS fid filename i R2 s_e_e SEs TSS varNames
 %% Exercise 2 - Calculations
-
-% The Solow model predicts that the elasticity of yi with respect to si (β2) is positive, and the
-% elasticity of yi with respect to (ni + g + δ) (β3) is negative. Use two t-tests to test if these implications
-% are supported by the data. Report the t-statistics, p-values and your decisions for both tests.
-
-% testing ​β2 is positive; H0: β2 = 0 & HA: β2 > 0 (one-sided)
-t_beta2 = beta_hat(2) / se_beta(2)
-tCritVal_2 = tinv(1 - alfa, n-k) % calculate the critical value
-p_beta2 = 1 - tcdf(t_beta2, n-k)   % right-tail test (β2 > 0)
-
-decision2 = "Fail to reject $H_0$"; %write in latex format so that we can easily export
-if p_beta2 < alfa
-    decision2 = "Reject $H_0$";
-end
-% We have enough eviden to reject our null in favour for our alternative. 
-
-% testing ​β3 is negative; H0: β3 = 0 & HA: β3 < 0 (one-sided)
-t_beta3 = beta_hat(3) / se_beta(3)
-tCritVal_3 = tinv(alfa, n-k) % calculate the critical value
-p_beta3 = tcdf(t_beta3, n-k)   % right-tail test (β3 < 0)
-
-decision3 = "Fail to reject $H_0$"; %write in latex format so that we can easily export
-if p_beta3 < alfa
-    decision3 = "Reject $H_0$";
-end
-% We have enough eviden to reject our null in favour for our alternative
-
-%% Exercise 2 - Exporting to LaTeX
-
-% File name to save
-filename = fullfile(outputFolder, 'Exercise_1.2.tex');
-fid = fopen(filename, 'w');
-
-% Table 1: ln(s)
-fprintf(fid, '\\noindent\\textbf{Test for $\\ln(s)$ -- Right-tailed: $H_0:\\;\\beta_2=0$ vs. $H_A:\\;\\beta_2>0$}\\\\\n');
-fprintf(fid, '\\begin{tabular}{lc}\n');  % Only 2 columns now
-fprintf(fid, '\\hline\n');
-fprintf(fid, 'Statistic & Value \\\\\n');  % Header
-fprintf(fid, '\\hline\n');
-fprintf(fid, 't-statistic & %.2f \\\\\n', t_beta2);
-fprintf(fid, 'Critical value (one-sided, $\\alpha=%.2f$) & %.2f \\\\\n', alfa, tCritVal_2);
-fprintf(fid, 'p-value & %.2f \\\\\n', p_beta2);
-fprintf(fid, '\\hline\n');
-fprintf(fid, '\\multicolumn{2}{l}{Degrees of freedom: %d} \\\\\n', n - k);
-fprintf(fid, '\\multicolumn{2}{l}{\\textbf{Decision:} %s} \\\\\n', decision2);
-fprintf(fid, '\\end{tabular}\n\n');
-
-% Vertical space
-fprintf(fid, '\\vspace{8pt}\n\n');
-
-% Table 2: ln(n+g+delta)
-fprintf(fid, '\\noindent\\textbf{Test for $\\ln(n+g+\\delta)$ -- Left-tailed: $H_0:\\;\\beta_3=0$ vs. $H_A:\\;\\beta_3<0$}\\\\\n');
-fprintf(fid, '\\begin{tabular}{lc}\n');  % Only 2 columns
-fprintf(fid, '\\hline\n');
-fprintf(fid, 'Statistic & Value \\\\\n');  % Header
-fprintf(fid, '\\hline\n');
-fprintf(fid, 't-statistic & %.2f \\\\\n', t_beta3);
-fprintf(fid, 'Critical value (one-sided, $\\alpha=%.2f$) & %.2f \\\\\n', alfa, tCritVal_3);
-fprintf(fid, 'p-value & %.2f \\\\\n', p_beta3);
-fprintf(fid, '\\hline\n');
-fprintf(fid, '\\multicolumn{2}{l}{Degrees of freedom: %d} \\\\\n', n - k);
-fprintf(fid, '\\multicolumn{2}{l}{\\textbf{Decision:} %s} \\\\\n', decision3);
-fprintf(fid, '\\end{tabular}\n\n');
-
-fclose(fid);
-disp(['LaTeX tables exported to ', filename]);
-
-%% Exercise 2 - Cross-Check
-
-mdl = fitlm(MRWdata_filtered, 'log_y ~ log_s + log_effective_depr');
-
-tbl = mdl.Coefficients;
-t_beta2 = tbl.tStat(2)
-p_beta2_right = 1 - tcdf(t_beta2, mdl.DFE) % one-sided β2 > 0
-
-t_beta3 = tbl.tStat(3)
-p_beta3_left = tcdf(t_beta3, mdl.DFE)  % one-sided β3 < 0
-
-%% Exercise 3 - Calculations
-% The Solow model also predicts that the elasticities β2 and β3 are equal in magnitude but
-% opposite in sign. Test this restriction using an F-test. 
+% MRW's extended Solow model predicts that β2 + β3 + β4 = 0. Test this
+% restriction using an F-test.
 
 % Restrictions
-R = [0 1 1];  %  beta2 + beta3 = 0
+R = [0 1 1 1];  %  beta2 + beta3 + beta4 = 0
 r = 0;
 df_num = rank(R);
 df_den = n-k;
@@ -217,16 +133,16 @@ F = (R*beta_hat - r)' * inv(R * sigma2_hat * inv(X'*X) * R') * (R*beta_hat - r);
 F_crit = finv(1 - alfa, df_num, df_den);
 p_value = 1 - fcdf(F, df_num, df_den);
 
-
 % Decision
 decisionF = "Fail to reject $H_0$"; %write in latex format so that we can easily export
 if p_value < alfa
     decisionF= "Reject $H_0$";
 end
 
-%% Exercise 3 - Export
+%% Exercise 2 - LaTeX
+
 % File name to save
-filename = fullfile(outputFolder, 'Exercise_1.3.tex');
+filename = fullfile(outputFolder, 'Exercise_2.2.tex');
 fid = fopen(filename, 'w'); %open file
 
 % Table: F-Test results
@@ -245,7 +161,4 @@ fprintf(fid, '\\end{tabular}\n\n');
 
 fclose(fid);  % close file
 
-
-
-
-
+disp(['LaTeX table exported to ', filename]);
