@@ -67,6 +67,7 @@ y_bar = mean(y); % calculate mean of observed y
 ESS = sum((y_hat - y_bar).^2); % Numerator: explained sum of squares
 TSS = sum((y - y_bar).^2); % Denominator: total sum of squares
 R2 = ESS / TSS; % R-squared
+R2_adj = 1 - (1 - R2) * (n - 1) / (n - k - 1); % adjusted R-squared
 
 % Calculate the s.e.e
 s_e_e = sqrt( (residuals' * residuals) / (n - k) );
@@ -103,7 +104,8 @@ end
 
 fprintf(fid, '\\hline\n');
 fprintf(fid, 'Observations & \\multicolumn{2}{c}{%d} \\\\\n', n); 
-fprintf(fid, 'R-squared & \\multicolumn{2}{c}{%.2f} \\\\\n', R2);
+fprintf(fid, '$R^2$ & \\multicolumn{2}{c}{%.2f} \\\\\n', R2);
+fprintf(fid, '$\bar{R}^2$ & \\multicolumn{2}{c}{%.2f} \\\\\n', R2_adj);
 fprintf(fid, 's.e.e. & \\multicolumn{2}{c}{%.2f} \\\\\n', s_e_e);
 fprintf(fid, '\\hline\n');
 fprintf(fid, '\\end{tabular}\n');

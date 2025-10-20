@@ -108,8 +108,8 @@ end
 % Summary statistics
 fprintf(fid, '\\hline\n');
 fprintf(fid, 'Observations & \\multicolumn{2}{c}{%d} \\\\\n', n); 
-fprintf(fid, '$R^2$ & \\multicolumn{2}{c}{%.2f} \\\\\n', R2);
-fprintf(fid, '$\bar{R}^2$ & \\multicolumn{2}{c}{%.2f} \\\\\n', R2_adj);
+fprintf(fid, '$R^2 & \\multicolumn{2}{c}{%.2f} \\\\\n', R2);
+fprintf(fid, 'R-squared & \\multicolumn{2}{c}{%.2f} \\\\\n', R2_adj);
 fprintf(fid, 's.e.e. & \\multicolumn{2}{c}{%.2f} \\\\\n', s_e_e);
 fprintf(fid, '\\hline\n');
 
